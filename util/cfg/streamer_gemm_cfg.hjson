@@ -20,12 +20,12 @@
     // For FIFO internal reader
     fifoReaderParams: {
       fifoWidth: [512, 512],
-      fifoDepth: [2, 2],
+      fifoDepth: [0, 0],
     }
     // FIFO interal writer
     fifoWriterParams: {
       fifoWidth: [2048],
-      fifoDepth: [2],
+      fifoDepth: [0],
     }
 
     //--------------------------------
