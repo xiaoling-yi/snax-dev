@@ -174,6 +174,31 @@ STREAM_GEMM_OUT_RTL_FILE ?= $(RTL_PATH)/${STREAM_GEMM_WRAPPER_FILENAME}
 $(STREAM_GEMM_OUT_RTL_FILE): $(STREAM_GEMM_CFG_FILE) $(GEMM_GEN_OUT_TOP_FILE) $(STREAM_GEMM_SCALA_FILE) $(STREAM_GEN_OUT_TOP_FILE) $(STREAM_FOR_GEMM_WRAPPER)
 	$(call generate_file,${STREAM_GEMM_CFG_FILE},${STREAM_GEMM_TPL_RTL_FILE},${STREAM_GEMM_OUT_RTL_FILE})
 
+# gen streamer-simd related files
+
+SIMD_SV_PATH = ${SNAX_DEV_ROOT}/rtl/streamer-simd
+
+SIMD_STREAMER = ${SIMD_SV_PATH}/StreamerTop.sv
+SIMD_TOP = ${SIMD_SV_PATH}/SIMDTop.sv
+STREAMER_SIMD_WRAPPER = ${SIMD_SV_PATH}/streamer_simd_wrapper.sv
+
+$(SIMD_STREAMER):
+	mkdir $(SIMD_SV_PATH) || \
+	cd ${SNAX_STREAMER_PATH} && \
+	sbt "runMain streamer.PostProcessingStreamerTop ${SIMD_SV_PATH}"
+	@echo "Generates output for Streamer for SIMD: ${SIMD_STREAMER}"
+
+SNAX_SIMD_PATH = $(shell $(BENDER) path snax-postprocessing-simd)
+$(SIMD_TOP):
+	cd ${SNAX_SIMD_PATH} && \
+	sbt "runMain simd.SIMDTop ${SIMD_SV_PATH}"
+	@echo "Generates output for PostProcessing SIMD Accelerator: ${SIMD_TOP}"
+
+STREAMER_SIMD_CFG_FILE = ${CFG_PATH}/streamer_simd_cfg.hjson
+STREAMER_SIMD_TPL_RTL_FILE = ${TPL_PATH}/streamer_simd_wrapper.sv.tpl
+$(STREAMER_SIMD_WRAPPER): $(SIMD_STREAMER) $(SIMD_TOP)
+	$(call generate_file,${STREAMER_SIMD_CFG_FILE},${STREAMER_SIMD_TPL_RTL_FILE},${STREAMER_SIMD_WRAPPER})
+
 #-----------------------------
 # Clean
 #-----------------------------
@@ -182,4 +207,5 @@ clean:
 	${STREAM_GEN_OUT_TOP_FILE} ${STREAM_GEN_OUT_TB_FILE} \
 	${STREAM_TCDM_GEN_OUT_TB_FILE} ${STREAM_MUL_OUT_RTL_FILE} \
 	${STREAM_MUL_GEN_OUT_TB_FILE} \
-	$(GEMM_GEN_OUT_TOP_FILE) $(STREAM_GEMM_SCALA_FILE) $(STREAM_FOR_GEMM_WRAPPER) $(STREAM_GEMM_OUT_RTL_FILE)
+	$(GEMM_GEN_OUT_TOP_FILE) $(STREAM_GEMM_SCALA_FILE) $(STREAM_FOR_GEMM_WRAPPER) $(STREAM_GEMM_OUT_RTL_FILE) \
+	$(SIMD_STREAMER) $(SIMD_TOP) $(STREAMER_SIMD_WRAPPER)
