@@ -133,6 +133,7 @@ def test_streamer_gemm(simulator, waves):
     # And all necessary files to make it work
     stream_gemm_tb_file = repo_path + "/tests/tb/tb_streamer_gemm.sv"
     if not os.path.exists(stream_gemm_tb_file):
+        subprocess.run(["mkdir", "rtl/streamer-gemm"])
         subprocess.run(["make", stream_gemm_tb_file])
 
     # Extract TCDM components
