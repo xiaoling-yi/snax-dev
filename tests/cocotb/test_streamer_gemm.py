@@ -17,15 +17,11 @@
 
 import cocotb
 import numpy as np
-from cocotb.triggers import RisingEdge, Timer, with_timeout
 from cocotb.clock import Clock
 from cocotb_test.simulator import run
 import snax_util
 import os
 import subprocess
-from decimal import Decimal
-
-from tests.cocotb.test_tcdm_subsys import MAX_VAL
 
 
 # Configurable testing parameters
@@ -87,7 +83,6 @@ CSR_GEMM_START = 26
 
 @cocotb.test()
 async def stream_alu_dut(dut):
-
     # Start clock
     clock = Clock(dut.clk_i, 10, units="ns")
     cocotb.start_soon(clock.start())
@@ -99,7 +94,6 @@ async def stream_alu_dut(dut):
     # Let simulation time run
     for i in range(10):
         await snax_util.clock_and_wait(dut)
-
 
     # generate data
     M = 16
@@ -135,19 +129,16 @@ async def stream_alu_dut(dut):
     cocotb.log.info("Preload data with DMA control")
 
     for i in range(len(inputs)):
-        await snax_util.wide_tcdm_write(
-            dut, i * WIDE_BANK_INCREMENT, inputs[i]
-        )
+        await snax_util.wide_tcdm_write(dut, i * WIDE_BANK_INCREMENT, inputs[i])
 
     await snax_util.wide_tcdm_clr(dut)
 
     cocotb.log.info("Setting up of CSR registers")
 
-    K_param = round(K//8)
-    N_param = round(N//8)
-    M_param = round(M//8)
+    K_param = round(K // 8)
+    N_param = round(N // 8)
+    M_param = round(M // 8)
 
-    
     await snax_util.reg_write(dut, CSR_LOOP_K, K_param)
     await snax_util.reg_write(dut, CSR_LOOP_N, N_param)
     await snax_util.reg_write(dut, CSR_LOOP_M, M_param)
@@ -193,11 +184,13 @@ async def stream_alu_dut(dut):
     cocotb.log.info("GEMM Operation Finished")
     await snax_util.reg_clr(dut)
 
-
     # Read the result and check
     for i in range(len(C_golden)):
-        tcdm_wide_val = await snax_util.wide_tcdm_read(dut, C_offset + i * WIDE_BANK_INCREMENT)
+        tcdm_wide_val = await snax_util.wide_tcdm_read(
+            dut, C_offset + i * WIDE_BANK_INCREMENT
+        )
         snax_util.comp_and_assert(C_golden[i], tcdm_wide_val)
+
 
 # Main test run
 def test_streamer_gemm(simulator, waves):
