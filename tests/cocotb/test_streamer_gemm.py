@@ -131,9 +131,9 @@ def test_streamer_gemm(simulator, waves):
 
     # Make sure to generate the testbench
     # And all necessary files to make it work
-    stream_alu_tb_file = repo_path + "/tests/tb/tb_streamer_gemm.sv"
-    if not os.path.exists(stream_alu_tb_file):
-        subprocess.run(["make", stream_alu_tb_file])
+    stream_gemm_tb_file = repo_path + "/tests/tb/tb_streamer_gemm.sv"
+    if not os.path.exists(stream_gemm_tb_file):
+        subprocess.run(["make", stream_gemm_tb_file])
 
     # Extract TCDM components
     tcdm_includes, tcdm_verilog_sources = snax_util.extract_tcdm_list()
@@ -151,7 +151,7 @@ def test_streamer_gemm(simulator, waves):
     ]
 
     tb_verilog_source = [
-        stream_alu_tb_file,
+        stream_gemm_tb_file,
     ]
 
     verilog_sources = (
